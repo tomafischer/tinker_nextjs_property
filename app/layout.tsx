@@ -1,5 +1,6 @@
 import * as React from 'react';
 import '@/assets/styles/globals.css';
+import AuthProvider from '@/components/auth/AuthProvider';
 
 
 //import { title } from 'process';
@@ -20,12 +21,14 @@ export default function RootLayout({
     //const pathname = usePathname();
     
   return (
+    <AuthProvider>
     <html lang="en">
       <body>
     
         {children}
       </body>
     </html>
+    </AuthProvider>
   );
 }
 

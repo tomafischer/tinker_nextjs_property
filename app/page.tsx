@@ -1,14 +1,18 @@
-import { auth } from '@/auth';
-import Link from 'next/link';
 
+import { auth, signIn, signOut } from '@/auth';
+import Link from 'next/link';
+import Header from '@/components/auth_demo/header';
+import { SignOut } from '@/components/auth_demo/auth-components';
 
 type Props = {}
 
 export default async function HomePage({ }: Props) {
   const session = await auth();
 
+
   return (
     <div>
+      <Header />
       <h1 className="text-3xl">Welcometo Tom's World of learning CSS Tailwind and nextjs</h1>
       <h1 className='mt-4 mb-2 text-lg font-bold'>Nextjs projects </h1>
       <div className="flex flex-col">
@@ -34,6 +38,11 @@ export default async function HomePage({ }: Props) {
           {JSON.stringify(session, null, 2)}
         </pre>
       </div>
+      {session && (
+      
+       <SignOut/>
+        
+        )}
     </div>
   );
 }

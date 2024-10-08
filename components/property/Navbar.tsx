@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import React from 'react'
 import logo from '@/assets/images/logo-white.png';
 import Image from 'next/image';
@@ -7,15 +7,36 @@ import profileDefault from '@/assets/images/profile.png';
 import Link from 'next/link';
 import { FaGoogle } from 'react-icons/fa';
 import { usePathname } from 'next/navigation';
+import {signIn, signOut, useSession, getProviders } from 'next-auth/react';
+//import {signIn, signOut} from '@/auth';
+import { ClientSafeProvider, LiteralUnion } from '@/components/auth/client';
 
+import { BuiltInProviderType } from 'next-auth/providers';
 type Props = {}
 
+
+type ProvidersType = Record<
+  LiteralUnion<BuiltInProviderType>,
+  ClientSafeProvider
+>
+
 export default function Navbar({ }: Props): React.ReactNode {
+  const {data: session} = useSession();
+  console.log(`Nav Bar: session: ${session}`);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [providers, setProviders] = useState<null | ProvidersType>(null);
   const pathname = usePathname();
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  //const [isLoggedIn, setIsLoggedIn] = useState(true);
 
+  useEffect(() => {
+    const setAuthProviders = async ()=>{
+      const res = await getProviders();
+      setProviders(res);
+    }
+
+    setAuthProviders();
+  },[]);
   return (
     <nav className="bg-blue-700 border-b border-blue-500">
       <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
@@ -76,7 +97,7 @@ export default function Navbar({ }: Props): React.ReactNode {
                   href="/property/properties"
                   className={`${pathname === '/property/properties' ? 'bg-blue-950' : ''} text-white hover:hover:bg-slate-700 hover:text-white rounded-md px-3 py-2`}
                 >Properties</Link>
-                {isLoggedIn && (
+                {session && (
                   <Link
                     href="/property/properties/add"
                     className={`${pathname === '/property/properties/add' ? 'bg-blue-950' : ''} text-white hover:hover:bg-slate-700 hover:text-white rounded-md px-3 py-2`}
@@ -88,12 +109,16 @@ export default function Navbar({ }: Props): React.ReactNode {
 
           {/* <!-- Right Side Menu (Logged Out) --> */}
           {
-            !isLoggedIn && (
+            !session && (
 
               <div className=" hidden md:block md:ml-6">
                 <div className="flex items-center">
                   <button
                     className="flex items-center text-white bg-gray-700 hover:bg-gray-900 hover:text-white rounded-md px-3 py-2"
+                    onClick={() => {
+                 
+                      signIn('google')}
+                    }
                   >
                     <div className="mr-2 text-white"><FaGoogle /></div>
                     <span>Login or Register</span>
@@ -102,7 +127,7 @@ export default function Navbar({ }: Props): React.ReactNode {
               </div>
             )}
           {/* <!-- Right Side Menu (Logged In) --> */}
-          {isLoggedIn && (
+          {session && (
             <div
               className="absolute inset-y-0 right-0 flex items-center pr-2 md:static md:inset-auto md:ml-6 md:pr-0"
             >
@@ -185,6 +210,7 @@ export default function Navbar({ }: Props): React.ReactNode {
                       role="menuitem"
                       tabIndex={-1}
                       id="user-menu-item-2"
+                      onClick={() => signOut()}
                     >
                       Sign Out
                     </button>
@@ -208,15 +234,16 @@ export default function Navbar({ }: Props): React.ReactNode {
               className={`${pathname === '/property/properties' ? 'bg-blue-950' : ''}  text-white block rounded-md px-3 py-2 text-base font-medium`}
             >Properties</Link>
 
-            {isLoggedIn && (
+            {session && (
               <Link
                 href="/property/properties/add"
                 className={`${pathname === '/property/properties/add' ? 'bg-blue-950' : ''}  text-white block rounded-md px-3 py-2 text-base font-medium`}
               >Add Property</Link>
             )}
-            {!isLoggedIn && (
+            {!session && (
               <button
                 className="flex items-center text-white bg-gray-700 hover:bg-gray-900 hover:text-white rounded-md px-3 py-2 my-5"
+               
               >
                 <i className="fa-brands fa-google mr-2"></i>
                 <span>Login or Register</span>

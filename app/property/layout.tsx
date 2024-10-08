@@ -1,7 +1,7 @@
 import * as React from 'react';
 import '@/assets/styles/globals.css';
 import Navbar from '../../components/property/Navbar';
-
+import AuthProvider from '@/components/auth/AuthProvider';
 //import { title } from 'process';
 
 
@@ -20,6 +20,7 @@ export default function RootLayout({
     //const pathname = usePathname();
     
   return (
+    // <AuthProvider>
     <html lang="en">
       <body
       >
@@ -29,6 +30,7 @@ export default function RootLayout({
         </div>
        </body>
      </html>
+    //  </AuthProvider>
   );
 }
 

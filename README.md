@@ -118,3 +118,23 @@ export default function RootLayout({
 
 
 ```
+
+# NextAuth
+##
+1. Serverless Function For Authenticaion
+2. Create a session
+3. Store Session
+4. Verify Session
+5. Access Protected Routes
+
+https://next-auth-example.vercel.app/
+
+https://github.com/nextauthjs/next-auth/blob/main/apps/examples/nextjs
+
+
+## Variables
+https://next-auth.js.org/configuration/options
+```bash
+#Secret
+openssl rand -base64 32
+```

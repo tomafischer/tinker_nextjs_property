@@ -29,6 +29,13 @@ export default async function HomePage({ }: Props) {
       <div className="flex flex-col">
         <Link href='/mango'>Mango Home</Link>
       </div>
+      <h1 className='mt-4 mb-2 text-lg font-bold'>Mongo and Kittens</h1>
+      <div className="flex flex-col">
+        <Link href='/api/mongo/test/mongoose'>Test Mongo via mongoose</Link>
+        <Link href='/api/mongo/test/mongodb'>Test Mongo via mongodb</Link>
+        <Link href='/api/kitten/mongoose'>All Kittens via mongodb</Link>
+        <Link href='/api/kitten/Juniper'>Juniper kitten via mongoose</Link>
+      </div>
       {/* Auth session info */}
       <div className="flex flex-col rounded-md bg-gray-100">
         <div className="rounded-t-md bg-gray-200 p-4 font-bold">
@@ -40,6 +47,7 @@ export default async function HomePage({ }: Props) {
       </div>
       {session && (
       
+
        <SignOut/>
         
         )}

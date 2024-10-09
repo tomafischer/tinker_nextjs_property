@@ -1,5 +1,5 @@
-import Kitten from '@/models/mango-learn/Kitten';
-import connectDB from '@/utils/mongo/mongoose';
+import {Kitten} from '@/models/mango-learn/Kitten';
+import {connectDB} from '@/utils/mongo/mongoose';
 
 
 const addKitten = async (name: string) => {

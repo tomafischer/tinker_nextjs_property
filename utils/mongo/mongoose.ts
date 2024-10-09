@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+
 let connected = false;
 
 const connectDB = async (dbName :string | null = null) => {
@@ -7,8 +8,8 @@ const connectDB = async (dbName :string | null = null) => {
 
   // if the database is already connected, don't connect again
   if (connected) {
-    console.log("MongoDB is connected");
-    return;
+   // await  console.log("MongoDB is connected");
+    //return;
   }
 
   // connect to the mongodb
@@ -29,6 +30,19 @@ const connectDB = async (dbName :string | null = null) => {
   }
 };
 
+const getConenction = (dbname: string |null = null) => {
+  if (dbname){  
+    return mongoose.connection.useDb(dbname);
+  }
+  return mongoose.connection;
+
+}
+
+const getTinker = () => {
+  return mongoose.connection.useDb('tinker');
+}
 
 
-export default connectDB;
+
+export {connectDB, getConenction, getTinker};
+

@@ -127,8 +127,9 @@ export default function RootLayout({
 4. Verify Session
 5. Access Protected Routes
 
+Sample app
 https://next-auth-example.vercel.app/
-
+Source code
 https://github.com/nextauthjs/next-auth/blob/main/apps/examples/nextjs
 
 
@@ -137,4 +138,11 @@ https://next-auth.js.org/configuration/options
 ```bash
 #Secret
 openssl rand -base64 32
+```
+
+# Mongo queries
+```javascript
+// get latest record
+db.collection.find().limit(1).sort({$updatedAt:-1})
+
 ```

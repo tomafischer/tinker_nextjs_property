@@ -1,8 +1,10 @@
 import { Schema, model, models, mongo } from "mongoose";
-import mongoose from "mongoose";
+//import mongoose from "mongoose";
 const kittenSchema = new Schema({
+  //id: String,
   name: String,
-});
+},
+{timestamps: true});
 
 // NOTE: methods must be added to the schema before compiling it with mongoose.model()
 kittenSchema.methods.speak = function () {

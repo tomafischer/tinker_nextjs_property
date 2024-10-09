@@ -1,6 +1,6 @@
 'use client';
 import React from 'react'
-import addKitten from '@/utils/mango/mangoose-learn';
+import addKitten from '@/lib/kitten/mangoose-learn';
 type Props = {}
 
 export default function MangoPage({}: Props) {

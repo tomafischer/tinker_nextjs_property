@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import connectDB from '@/config/database';
+import connectDB from '@/utils/mongo/mongoose';
 import Property from '@/models/property/Property';
 import Hero from '@/components/property/Hero';
 import InfoBoxes from '@/components/property/InfoBoxes';

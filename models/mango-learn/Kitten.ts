@@ -1,5 +1,5 @@
-import { Schema, model, models } from "mongoose";
-
+import { Schema, model, models, mongo } from "mongoose";
+import mongoose from "mongoose";
 const kittenSchema = new Schema({
   name: String,
 });
@@ -16,4 +16,8 @@ kittenSchema.methods.speak = function () {
 //compile model from schema
 const Kitten = models.Kitten || model("Kitten", kittenSchema);
 
-export default Kitten;
+// const function kitten_from_db(con: mongoose.Connection) {
+//   return con.model('Kitten');
+// }
+export { Kitten, kittenSchema };
+//export default Kitten;

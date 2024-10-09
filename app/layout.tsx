@@ -1,7 +1,7 @@
 import * as React from 'react';
 import '@/assets/styles/globals.css';
 import AuthProvider from '@/components/auth/AuthProvider';
-
+import Navbar from '@/components/property/Navbar';
 
 //import { title } from 'process';
 
@@ -23,11 +23,14 @@ export default function RootLayout({
   return (
     <AuthProvider>
     <html lang="en">
-      <body>
-    
+      <body
+      >
+    <div>
+        <Navbar />
         {children}
-      </body>
-    </html>
+        </div>
+       </body>
+     </html>
     </AuthProvider>
   );
 }

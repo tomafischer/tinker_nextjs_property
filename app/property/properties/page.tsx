@@ -1,5 +1,5 @@
 import Property from "@/models/property/Property";
-import connectDB from "@/config/database";
+import connectDB from "@/utils/mongo/mongoose";
 
 import properties_local from "@/fake-data/property/properties.json";
 type Props = {}

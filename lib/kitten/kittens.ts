@@ -1,7 +1,7 @@
-import client from "@/utils/mongo/mongodb-client";
-import {connectDB} from "@/utils/mongo/mongoose";
+import client from "@/lib/mongo/mongo-client";
+import {connectDB} from "@/lib/mongo/mongoose";
 //import Kitten from "@/models/mango-learn/Kitten";
-import { kittenSchema} from "@/models/mango-learn/Kitten";
+//import { kittenSchema} from "@/lib/kitten/Kitten";
 import mongoose from "mongoose";
 
 export async function getAllKittens_as_json(){
@@ -10,13 +10,3 @@ export async function getAllKittens_as_json(){
   return kittens;
 }
 
-export async function getAllKittens_as_model() {
-  await connectDB();
-  const db = mongoose.connection.useDb('tinker');
-
-  const Kitten = db.model('Kitten', kittenSchema)
-  const kittens =  Kitten.find().lean();
-
-  return kittens;
-  
-}

@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 
-import { cn } from "@/utils/tw-utils"
+import { cn } from "@/lib/utils/tw-utils"
 import CustomLink from "./custom-link"
 import {
   NavigationMenu,

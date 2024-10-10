@@ -1,5 +1,5 @@
 import { type NextRequest } from "next/server";
-import client from "@/utils/mongo/mongodb-client";
+import client from "@/lib/mongo/mongo-client";
 import { Db } from "mongodb";
 
 export async function GET(request: NextRequest) {

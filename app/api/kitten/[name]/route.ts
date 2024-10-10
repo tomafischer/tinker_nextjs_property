@@ -1,6 +1,6 @@
-import { connectDB } from "@/utils/mongo/mongoose";
+import { connectDB } from "@/lib/mongo/mongoose";
 import mongoose from "mongoose";
-import { Kitten, kittenSchema } from "@/models/mango-learn/Kitten";
+import { Kitten, kittenSchema } from "@/lib/kitten/Kitten";
 type Props = {
   params: {
     name: string;

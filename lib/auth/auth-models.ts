@@ -1,12 +1,13 @@
-import { MongoModelBase } from "@/utils/mongo/mongodb";
+import { MongoModelBase } from "@/lib/mongo/mongo-utils";
 import { ObjectId } from "mongodb";
+import {AdapterUser} from  '@auth/core/adapters';
 
 const col_auth_audit = "auth_audits";
 interface AuthAudit extends MongoModelBase {
   user_id?: string;
   email?: string;
   action: string;
-  details?: string | null;
+  details?: any | null;
 }
 
 const col_users = "users";
@@ -20,5 +21,10 @@ interface AppUser  extends MongoModelBase{
   bookmarks?: ObjectId[];
 }
 
-export type {AuthAudit, AppUser};
+interface SessionUser extends AdapterUser {
+  roles: string[];
+  user_app_id: string;
+}
+
+export type {AuthAudit, AppUser, SessionUser};
 export {col_auth_audit, col_users};

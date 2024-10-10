@@ -36,20 +36,23 @@ export default async function HomePage({ }: Props) {
         <Link href='/api/kitten/mongoose'>All Kittens via mongodb</Link>
         <Link href='/api/kitten/Juniper'>Juniper kitten via mongoose</Link>
       </div>
+
       {/* Auth session info */}
-      <div className="flex flex-col rounded-md bg-gray-100">
+      <h1 className="mt-4 mb-2 text-lg font-bold">Authentication info</h1>
+      <div className="flex flex-col">
+        <Link href='/api/auth-users/session'>User Session info via API</Link>
+        <Link href='http://localhost:3000/api/auth-users/users?email=aft3000dev@gmail.com'>App User info by email - default session user</Link>
+      </div>
+      <div className="flex flex-col mt-4 rounded-md bg-gray-100">
         <div className="rounded-t-md bg-gray-200 p-4 font-bold">
-          Current Session
+          Current Session via Server rendered Page
         </div>
         <pre className="whitespace-pre-wrap break-all px-4 py-6">
           {JSON.stringify(session, null, 2)}
         </pre>
       </div>
-      {session && (
-      
-
+      {session && (   
        <SignOut/>
-        
         )}
     </div>
   );

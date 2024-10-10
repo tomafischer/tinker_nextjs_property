@@ -1,85 +1,105 @@
-
 // Read this
 // https://authjs.dev/guides/edge-compatibility
 
 import NextAuth from "next-auth";
-import client from "@/utils/mongo/mongodb-client";
-import { AppUser, AuthAudit, col_auth_audit, col_users} from "@/models/auth/auth_models";
-import { addTS } from "./utils/mongo/mongodb";
-import authConfig from "./auth.config"
+import client from "@/lib/mongo/mongo-client";
+import Google from "next-auth/providers/google";
+import {
+  AppUser,
+  AuthAudit,
+  col_auth_audit,
+  col_users,
+} from "@/lib/auth/auth-models";
+import { addTS } from "./lib/mongo/mongo-utils";
+import authConfig from "./auth.middleware";
+import { SessionUser } from "@/lib/auth/auth-models";
 
+import { userFindOneByEmail, userInsertOneAndAudit, writeAudit,recordLoging } from "./lib/auth/auth-user-management";
 
-let counter =0;
+let counter = 0;
 // Define the types for account and profile
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  providers: [Google({
+    // clientId: process.env.GOOGLE_CLIENT_ID,
+    // clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    authorization: {
+      params: {
+        prompt: "consent",
+        access_type: "offline",
+        response_type: "code",
+      },
+    },
+    allowDangerousEmailAccountLinking: true,
+    async profile(profile) {
+      console.log('Google.profile is called: profile', profile);
+      console.log('loading user info from db');
+      const app_user = await userFindOneByEmail(profile.email);
+      return {roles: ['admin','user'], user_app_id: app_user?._id, ...profile}
+    }
+  })],
   //adapter: MongoDBAdapter(client),
   session: { strategy: "jwt" },
   //  Callbacks
   callbacks: {
     async signIn({ user, account, profile }) {
       //console.log("signIn", user, account, profile);
-      //1 .connect to the DB
-      const db = client.db();
-      const db_users = db.collection(col_users);
+  
+      //user info comes from profile
 
-      //2. check if the user exists
-      let userExists = await db_users.findOne({ email: profile?.email }) as AppUser;
-      //let userExists = await User.findOne({ email: profile?.email }).lean();
-      //3. if not creaete
-      let user_id = userExists?._id;
-      if (!userExists) {
-        if (!user || !user.email){
-          throw new Error("No user or email in the new User");
-        }
-        const data : AppUser = {
-          email: user.email,
+      const app_user_id = profile?.user_app_id as string;
+      // if user does not exist, let's create it
+      if(!user?.email){
+        throw new Error('No email found in user profile')
+      }
+      //if user does not exist, let's create it
+      if (!app_user_id) {
+        const data: AppUser = {
+          email: user?.email,
           username: user?.name,
           email_verified: profile?.email_verified,
           image: user?.image,
           provider: account?.provider,
           provider_id: account?.providerAccountId,
         };
-        const insert_result = await db_users.insertOne(addTS(data));
-        user_id = insert_result.insertedId;
-        console.log("\nCreateed user\n");
+        const insert_result = await userInsertOneAndAudit(data); 
+        console.log("\nCreateed user\n");      
+      }else{
+        recordLoging(app_user_id, profile?.email, profile);
       }
 
-      // 4. log the user
-      // console.log("Writing User to autAudit ");//, userExists);
-      const audit_record : AuthAudit= {
-        user_id: user_id?.toString(),
-        email: userExists?.email,
-        action: "sign-in",
-        details: null,
-      }
-      await db.collection(col_auth_audit).insertOne(addTS(audit_record));
-  
       //4. return true to allow sign in
       return true;
     },
-    async session({ session }) {
-      console.log(`${counter++}\n session is called: Session, user`);//, session);
-     
-        // 1. get user from db
-       // const user_from_db = await User.findOne({ email: session.user.email }) as unknown as IUser;
-      // const user_from_db = await db.collection("users").findOne({ email: session.user.email }) as IUser; 
-       
-     
-      //console.log(user_from_db);
-      //2. assign user id from session
-      //session.user.id = "1538eefa-8be7-4fda-9cc2-b2eab92f4574";
-      //console.log(`session after adding id: `, session); // 3 rerturn the session
+    async session({ session, token }) {
+      console.log(`${counter++}\n session is called: Session, user`); //, session);
+
+      
+      (session.user as SessionUser).roles= token.roles as string[]; 
+      (session.user as SessionUser).user_app_id = token.user_app_id as string;
       return session;
     },
-    // async jwt({ token, trigger, session, account }) {
-    //   console.log('jwt is called: token, trigger, session, account');//, token, trigger, session, account);
-    //   return token
-    // }
+    async jwt({ token, user }) {
+      console.log('*** jwt is called: token, user');
+      console.log(token, user)
+      //, token, trigger, session, account);
+      if(user){
+        token.roles = (user as SessionUser).roles;
+        token.user_app_id = (user as SessionUser).user_app_id;
+      }
+      return token
+    }
     // async redirect(url, baseUrl) {
     //   return baseUrl
     // },
+    ,
+    authorized: async ({ auth }) => {
+      // Logged in users are authenticated, otherwise redirect to login page
+      console.log("*****\n auth middleware is called in auth.ts");
+      console.log(auth);
+      return !!auth;
+    },
   },
-  ...authConfig,
+  //...authConfig,
 });
 
 const user_example = {

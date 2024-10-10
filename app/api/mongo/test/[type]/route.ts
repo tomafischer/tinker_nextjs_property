@@ -1,5 +1,5 @@
-import client from '@/utils/mongo/mongodb-client';
-import {connectDB} from '@/utils/mongo/mongoose';
+import client from '@/lib/mongo/mongo-client';
+import {connectDB} from '@/lib/mongo/mongoose';
 type Props = {
  params: {type: string}
 }

@@ -14,4 +14,13 @@ export default {
     },
     allowDangerousEmailAccountLinking: true,
   })],
+  callbacks: {
+    authorized: async ({ auth }) => {
+      // Logged in users are authenticated, otherwise redirect to login page
+      console.log("auth.middleware: middleware authorized called", auth)
+      return !!auth
+    },
+  },
+
+
 } satisfies NextAuthConfig

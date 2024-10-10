@@ -1,4 +1,4 @@
-import { cn } from "@/utils/tw-utils";
+import { cn } from "@/lib/utils/tw-utils";
 import { ExternalLink } from "lucide-react"
 import Link from "next/link"
 

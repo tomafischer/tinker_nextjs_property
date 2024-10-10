@@ -9,7 +9,7 @@ import { FaGoogle } from 'react-icons/fa';
 import { usePathname } from 'next/navigation';
 import {signIn, signOut, useSession, getProviders } from 'next-auth/react';
 //import {signIn, signOut} from '@/auth';
-import { ClientSafeProvider, LiteralUnion } from '@/components/auth/client';
+import { ClientSafeProvider, LiteralUnion } from '@/lib/auth/client';
 
 import { BuiltInProviderType } from 'next-auth/providers';
 type Props = {}
@@ -22,12 +22,13 @@ type ProvidersType = Record<
 
 export default function Navbar({ }: Props): React.ReactNode {
   const {data: session} = useSession();
-  console.log(`Nav Bar: session: ${session}`);
+  console.log(`Nav Bar: session: ${JSON.stringify(session)}`);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [providers, setProviders] = useState<null | ProvidersType>(null);
   const pathname = usePathname();
   //const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const profileImage = session?.user?.image 
 
   useEffect(() => {
     const setAuthProviders = async ()=>{
@@ -175,7 +176,9 @@ export default function Navbar({ }: Props): React.ReactNode {
                     <span className="sr-only">Open user menu</span>
                     <Image
                       className="h-8 w-8 rounded-full"
-                      src={profileDefault}
+                      src={profileImage || profileDefault}
+                      width={40}
+                      height={40}
                       alt=""
                     />
                   </button>
@@ -210,7 +213,9 @@ export default function Navbar({ }: Props): React.ReactNode {
                       role="menuitem"
                       tabIndex={-1}
                       id="user-menu-item-2"
-                      onClick={() => signOut()}
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                        signOut()}}
                     >
                       Sign Out
                     </button>
@@ -243,7 +248,9 @@ export default function Navbar({ }: Props): React.ReactNode {
             {!session && (
               <button
                 className="flex items-center text-white bg-gray-700 hover:bg-gray-900 hover:text-white rounded-md px-3 py-2 my-5"
-               
+                onClick={() => {
+                  signIn('google')}
+                }
               >
                 <i className="fa-brands fa-google mr-2"></i>
                 <span>Login or Register</span>

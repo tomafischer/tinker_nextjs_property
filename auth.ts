@@ -14,57 +14,79 @@ import { addTS } from "./lib/mongo/mongo-utils";
 import authConfig from "./auth.middleware";
 import { SessionUser } from "@/lib/auth/auth-models";
 
-import { userFindOneByEmail, userInsertOneAndAudit, writeAudit,recordLoging } from "./lib/auth/auth-user-management";
+import {
+  userFindOneByEmail,
+  userInsertOneAndAudit,
+  writeAudit,
+  recordLoging,
+  sessionUserInfoGet,
+  sessionUserInfoGet_cache
+} from "./lib/auth/auth-user-management";
 
 let counter = 0;
 // Define the types for account and profile
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  providers: [Google({
-    // clientId: process.env.GOOGLE_CLIENT_ID,
-    // clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    authorization: {
-      params: {
-        prompt: "consent",
-        access_type: "offline",
-        response_type: "code",
+  providers: [
+    Google({
+      // clientId: process.env.GOOGLE_CLIENT_ID,
+      // clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
+        },
       },
-    },
-    allowDangerousEmailAccountLinking: true,
-    async profile(profile) {
-      console.log('Google.profile is called: profile', profile);
-      console.log('loading user info from db');
-      const app_user = await userFindOneByEmail(profile.email);
-      return {roles: ['admin','user'], user_app_id: app_user?._id, ...profile}
-    }
-  })],
+      allowDangerousEmailAccountLinking: true,
+      // async profile(profile) {
+      //   console.log("Google.profile is called: profile", profile);
+      //   console.log("loading user info from db");
+      //   const sessionInfo  = await sessionUserInfoGet(profile.email);
+      //   console.log("Google provider: extra session info from DB", sessionInfo);
+      //   const new_proile =  {
+      //     roles: sessionInfo?.roles || [],
+      //     user_app_id: sessionInfo?._id.toJSON(),
+      //     ...profile,
+      //   };
+      //   console.log("auth: Google provider: new profile", new_proile);
+      //   return new_proile
+      // },
+    }),
+  ],
   //adapter: MongoDBAdapter(client),
   session: { strategy: "jwt" },
   //  Callbacks
   callbacks: {
     async signIn({ user, account, profile }) {
       //console.log("signIn", user, account, profile);
-  
       //user info comes from profile
-
-      const app_user_id = profile?.user_app_id as string;
+      //console.log("auth.signIn: profile received", profile);
+      const sessionInfo  = await sessionUserInfoGet(profile?.email as string);
+      
+      console.log("auth.signIn: app_user_id", sessionInfo?._id);
       // if user does not exist, let's create it
-      if(!user?.email){
-        throw new Error('No email found in user profile')
+      if (!profile?.email) {
+        throw new Error("No email found in user profile");
       }
       //if user does not exist, let's create it
-      if (!app_user_id) {
+      if (!sessionInfo?._id) {
+        console.log("auth.signUp: User does not exist, creating user");
         const data: AppUser = {
-          email: user?.email,
-          username: user?.name,
+          email: profile?.email,
+          username: profile?.name,
+          first_name: profile?.given_name,
+          last_name: profile?.family_name,
           email_verified: profile?.email_verified,
           image: user?.image,
           provider: account?.provider,
           provider_id: account?.providerAccountId,
+          roles: [],
+          last_login: new Date(),
         };
-        const insert_result = await userInsertOneAndAudit(data); 
-        console.log("\nCreateed user\n");      
-      }else{
-        recordLoging(app_user_id, profile?.email, profile);
+        const insert_result = await userInsertOneAndAudit(data);
+        console.log("\nCreateed user\n");
+      } else {
+        recordLoging(sessionInfo._id, profile?.email, profile);
       }
 
       //4. return true to allow sign in
@@ -73,35 +95,60 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async session({ session, token }) {
       console.log(`${counter++}\n session is called: Session, user`); //, session);
 
+      let roles = token.roles as string[];
+      let user_app_id = token.user_app_id as string;
+      // //check for user info in token
+      // if (true) {
+      //   console.log("auth.session: user_app_id not set:", (session.user as SessionUser).user_app_id);
+      //   console.log("loading user_info for session");
+      //   const user_data = await sessionUserInfoGet_cache((session.user as SessionUser).email);
+      //   roles = user_data?.roles || [];
+      //   user_app_id = user_data?._id.toString() || "";
+      // }
       
-      (session.user as SessionUser).roles= token.roles as string[]; 
-      (session.user as SessionUser).user_app_id = token.user_app_id as string;
+      (session.user as SessionUser).roles = roles;
+      (session.user as SessionUser).user_app_id = user_app_id; 
+      console.log("auth.session: final session", user_app_id);
       return session;
     },
     async jwt({ token, user }) {
-      console.log('*** jwt is called: token, user');
-      console.log(token, user)
-      //, token, trigger, session, account);
-      if(user){
-        token.roles = (user as SessionUser).roles;
-        token.user_app_id = (user as SessionUser).user_app_id;
+      console.log("*** jwt is called: token, user", user);
+      if(!token.user_app_id && token.email) {
+        console.log("auth.jwt: user_app_id not set");
+        console.log("loading user info for token");
+        const user_data = await sessionUserInfoGet_cache(token.email);
+        token.roles = user_data?.roles || [];
+        token.user_app_id = user_data?._id.toString() || "";
+        
       }
-      return token
-    }
+      // console.log(token, user);
+      //, token, trigger, session, account);
+      // if (user) {
+      //   token.roles = (user as SessionUser).roles;
+      //   token.user_app_id = (user as SessionUser).user_app_id;
+      // }
+      console.log("auth.jwt: token final", token);
+      return token;
+    },
     // async redirect(url, baseUrl) {
     //   return baseUrl
     // },
-    ,
     authorized: async ({ auth }) => {
       // Logged in users are authenticated, otherwise redirect to login page
       console.log("*****\n auth middleware is called in auth.ts");
-      console.log(auth);
+      // console.log(auth);
       return !!auth;
     },
   },
   //...authConfig,
 });
 
+/*
+
+// Examples go here
+
+
+ */
 const user_example = {
   id: "1538eefa-8be7-4fda-9cc2-b2eab92f4574",
   name: "Chatt Dev",

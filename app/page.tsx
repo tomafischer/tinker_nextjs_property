@@ -3,12 +3,12 @@ import { auth, signIn, signOut } from '@/auth';
 import Link from 'next/link';
 import Header from '@/components/auth_demo/header';
 import { SignOut } from '@/components/auth_demo/auth-components';
-
+import {getToken} from '@auth/core/jwt';
 type Props = {}
 
 export default async function HomePage({ }: Props) {
   const session = await auth();
-
+  //const toke = await getToken();
 
   return (
     <div>
@@ -49,6 +49,9 @@ export default async function HomePage({ }: Props) {
         </div>
         <pre className="whitespace-pre-wrap break-all px-4 py-6">
           {JSON.stringify(session, null, 2)}
+        </pre>
+        <pre>
+         
         </pre>
       </div>
       {session && (   

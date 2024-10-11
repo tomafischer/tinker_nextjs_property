@@ -32,7 +32,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       authorization: {
         params: {
-          prompt: "consent",
+         // prompt: "select_account", //prompt: "consent",
           access_type: "offline",
           response_type: "code",
         },
@@ -93,41 +93,36 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return true;
     },
     async session({ session, token }) {
-      console.log(`${counter++}\n session is called: Session, user`); //, session);
+      console.log(`***  session is called: ${counter++} `); //, session);
 
       let roles = token.roles as string[];
       let user_app_id = token.user_app_id as string;
-      // //check for user info in token
-      // if (true) {
-      //   console.log("auth.session: user_app_id not set:", (session.user as SessionUser).user_app_id);
-      //   console.log("loading user_info for session");
-      //   const user_data = await sessionUserInfoGet_cache((session.user as SessionUser).email);
-      //   roles = user_data?.roles || [];
-      //   user_app_id = user_data?._id.toString() || "";
-      // }
-      
+
       (session.user as SessionUser).roles = roles;
       (session.user as SessionUser).user_app_id = user_app_id; 
-      console.log("auth.session: final session", user_app_id);
+      //console.log("auth.session: final session", user_app_id);
       return session;
     },
     async jwt({ token, user }) {
-      console.log("*** jwt is called: token, user", user);
+      /*
+      * That's where all the magic happens. 
+      * first times after auth it gets the providers profile
+      * we won't have a app_user_id or roles in there so 
+      *   - we will pull from the db
+      *   - augment the token with the extra user info 
+      * 
+      * This info will flow to the session callback 
+      */
+      console.log("***  jwt is called");
       if(!token.user_app_id && token.email) {
         console.log("auth.jwt: user_app_id not set");
         console.log("loading user info for token");
         const user_data = await sessionUserInfoGet_cache(token.email);
         token.roles = user_data?.roles || [];
         token.user_app_id = user_data?._id.toString() || "";
-        
+        console.log("auth.jwt: token final", token);
       }
-      // console.log(token, user);
-      //, token, trigger, session, account);
-      // if (user) {
-      //   token.roles = (user as SessionUser).roles;
-      //   token.user_app_id = (user as SessionUser).user_app_id;
-      // }
-      console.log("auth.jwt: token final", token);
+      
       return token;
     },
     // async redirect(url, baseUrl) {
